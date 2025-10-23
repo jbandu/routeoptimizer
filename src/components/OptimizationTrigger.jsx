@@ -80,7 +80,6 @@ export default function OptimizationTrigger() {
         .from('agent_executions')
         .insert({
           execution_id: executionId,
-          agent_name: 'route_optimizer',
           input_params: inputParams,
           output_data: outputData,
           status: 'success',
