@@ -83,8 +83,7 @@ export default function OptimizationTrigger() {
           input_params: inputParams,
           output_data: outputData,
           status: 'success',
-          duration_ms: Math.floor(Math.random() * 500 + 100),
-          timestamp: new Date().toISOString()
+          duration_ms: Math.floor(Math.random() * 500 + 100)
         });
 
       if (insertError) throw insertError;
