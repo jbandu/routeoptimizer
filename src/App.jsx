@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
-import { Map, BarChart3, Play, Wind, Fuel } from 'lucide-react';
+import { Map, BarChart3, Play, Wind, Fuel, TrendingUp, CheckCircle, Settings } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import MapView from './components/MapView';
 import OptimizationTrigger from './components/OptimizationTrigger';
 import WindOptimization from './components/WindOptimization';
 import FuelTankering from './components/FuelTankering';
+import SavingsDashboard from './components/SavingsDashboard';
+import ApprovalWorkflow from './components/ApprovalWorkflow';
+import FuelPriceManagement from './components/FuelPriceManagement';
 
 function App() {
   const [currentView, setCurrentView] = useState('dashboard');
@@ -47,10 +50,10 @@ function App() {
               </div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 overflow-x-auto">
               <button
                 onClick={() => setCurrentView('dashboard')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
                   currentView === 'dashboard'
                     ? 'bg-white text-[#003B7A]'
                     : 'bg-[#0066CC] hover:bg-[#0080FF]'
@@ -60,8 +63,30 @@ function App() {
                 Dashboard
               </button>
               <button
+                onClick={() => setCurrentView('savings')}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
+                  currentView === 'savings'
+                    ? 'bg-white text-[#003B7A]'
+                    : 'bg-[#0066CC] hover:bg-[#0080FF]'
+                }`}
+              >
+                <TrendingUp className="w-4 h-4" />
+                Savings
+              </button>
+              <button
+                onClick={() => setCurrentView('approval')}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
+                  currentView === 'approval'
+                    ? 'bg-white text-[#003B7A]'
+                    : 'bg-[#0066CC] hover:bg-[#0080FF]'
+                }`}
+              >
+                <CheckCircle className="w-4 h-4" />
+                Approval
+              </button>
+              <button
                 onClick={() => setCurrentView('map')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
                   currentView === 'map'
                     ? 'bg-white text-[#003B7A]'
                     : 'bg-[#0066CC] hover:bg-[#0080FF]'
@@ -72,7 +97,7 @@ function App() {
               </button>
               <button
                 onClick={() => setCurrentView('optimizer')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
                   currentView === 'optimizer'
                     ? 'bg-white text-[#003B7A]'
                     : 'bg-[#0066CC] hover:bg-[#0080FF]'
@@ -83,25 +108,36 @@ function App() {
               </button>
               <button
                 onClick={() => setCurrentView('wind')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
                   currentView === 'wind'
                     ? 'bg-white text-[#003B7A]'
                     : 'bg-[#0066CC] hover:bg-[#0080FF]'
                 }`}
               >
                 <Wind className="w-4 h-4" />
-                Wind Analysis
+                Wind
               </button>
               <button
                 onClick={() => setCurrentView('fuel')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
                   currentView === 'fuel'
                     ? 'bg-white text-[#003B7A]'
                     : 'bg-[#0066CC] hover:bg-[#0080FF]'
                 }`}
               >
                 <Fuel className="w-4 h-4" />
-                Fuel Tankering
+                Tankering
+              </button>
+              <button
+                onClick={() => setCurrentView('fuelprices')}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
+                  currentView === 'fuelprices'
+                    ? 'bg-white text-[#003B7A]'
+                    : 'bg-[#0066CC] hover:bg-[#0080FF]'
+                }`}
+              >
+                <Settings className="w-4 h-4" />
+                Prices
               </button>
             </div>
           </div>
@@ -110,6 +146,8 @@ function App() {
 
       <main>
         {currentView === 'dashboard' && <Dashboard />}
+        {currentView === 'savings' && <SavingsDashboard />}
+        {currentView === 'approval' && <ApprovalWorkflow />}
         {currentView === 'map' && <MapView routes={routes} airports={airports} />}
         {currentView === 'optimizer' && <OptimizationTrigger />}
         {currentView === 'wind' && <WindOptimization />}
@@ -123,6 +161,7 @@ function App() {
             />
           </div>
         )}
+        {currentView === 'fuelprices' && <FuelPriceManagement />}
       </main>
     </div>
   );
