@@ -64,20 +64,14 @@ export default function OptimizationTrigger() {
     setCurrentStep(null);
 
     try {
-      const executionId = `exec_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      addStep('init', 'Initializing Optimization', 'processing');
+      await sleep(300);
+      addStep('init', 'Initializing Optimization', 'complete');
 
-      addStep('weather', 'Fetching Weather Data', 'processing');
-      await sleep(800);
-      const weatherData = {
-        temperature: Math.floor(Math.random() * 15) + 20,
-        windSpeed: Math.floor(Math.random() * 20) + 5,
-        visibility: Math.floor(Math.random() * 5) + 5,
-        condition: ['Clear', 'Partly Cloudy', 'Light Rain'][Math.floor(Math.random() * 3)]
-      };
-      addStep('weather', 'Fetching Weather Data', 'complete', weatherData);
+      addStep('weather', 'Fetching Real Weather Data', 'processing');
+      await sleep(500);
 
       addStep('route', 'Loading Route Data', 'processing');
-      await sleep(600);
       const { data: routes, error: routeError } = await supabase
         .from('copa_routes')
         .select('*')
@@ -94,66 +88,82 @@ export default function OptimizationTrigger() {
         duration: selectedRoute.flight_time_hours
       });
 
-      addStep('claude', 'Sending Request to Claude AI', 'processing');
-      await sleep(1200);
-      const claudeRequest = {
-        model: 'claude-3-sonnet',
+      addStep('claude', 'Calling Claude AI API', 'processing');
+
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/optimize-route`;
+      const apiKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          origin,
+          destination,
+          aircraft_type: aircraftType,
+          departure_time: new Date().toISOString()
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Optimization failed');
+      }
+
+      const result = await response.json();
+      const outputData = result.data;
+
+      addStep('weather', 'Fetching Real Weather Data', 'complete', {
+        temperature: outputData.weather.temperature,
+        windSpeed: outputData.weather.wind_speed,
+        visibility: outputData.weather.visibility,
+        condition: outputData.weather.condition
+      });
+
+      addStep('claude', 'Calling Claude AI API', 'complete', {
+        model: result.api_mode.claude ? 'claude-sonnet-4-20250514' : 'rule-based',
         parameters: {
           origin,
           destination,
           aircraft: aircraftType,
-          weather: weatherData,
-          route: selectedRoute
+          weather_api: result.api_mode.weather ? 'OpenWeatherMap' : 'mock'
         }
-      };
-      addStep('claude', 'Sending Request to Claude AI', 'complete', claudeRequest);
+      });
 
-      addStep('analysis', 'Claude AI Analyzing Route Options', 'processing');
-      await sleep(1500);
+      addStep('analysis', 'AI Analyzing Route Options', 'processing');
+      await sleep(800);
       const analysisSteps = [
         'Evaluating fuel efficiency based on weather conditions',
         'Calculating optimal altitude and speed profile',
-        'Analyzing historical route performance data',
+        'Analyzing wind data at multiple flight levels',
         'Assessing aircraft capabilities for this route',
         'Computing cost-benefit scenarios'
       ];
-      addStep('analysis', 'Claude AI Analyzing Route Options', 'complete', { steps: analysisSteps });
+      addStep('analysis', 'AI Analyzing Route Options', 'complete', { steps: analysisSteps });
 
       addStep('recommendation', 'Generating Final Recommendation', 'processing');
-      await sleep(900);
-      const confidenceScore = 0.85 + Math.random() * 0.1;
-      const estimatedSavings = Math.random() * 500 + 200;
-
-      const outputData = {
-        selected_route: selectedRoute,
-        confidence_score: confidenceScore,
-        estimated_savings_usd: estimatedSavings,
-        weather: weatherData,
-        reasoning: `Optimal route selected based on distance (${selectedRoute.distance_nm} nm), flight time (${selectedRoute.flight_time_hours}h), and current weather conditions (${weatherData.condition}, ${weatherData.temperature}°C). Aircraft type ${aircraftType} is well-suited for this route with favorable wind conditions.`
-      };
-      addStep('recommendation', 'Generating Final Recommendation', 'complete', outputData);
-
-      const inputParams = {
-        origin,
-        destination,
-        aircraft_type: aircraftType,
-        timestamp: new Date().toISOString()
-      };
-
-      const { error: insertError } = await supabase
-        .from('agent_executions')
-        .insert({
-          execution_id: executionId,
-          input_params: inputParams,
-          output_data: outputData,
-          status: 'success',
-          duration_ms: Math.floor(Math.random() * 500 + 100)
-        });
-
-      if (insertError) throw insertError;
-
       await sleep(500);
-      setResult(outputData);
+
+      const finalOutput = {
+        selected_route: outputData.selected_route,
+        confidence_score: outputData.confidence_score,
+        estimated_savings_usd: outputData.estimated_savings_usd,
+        estimated_fuel_savings_lbs: outputData.estimated_fuel_savings_lbs,
+        estimated_time_savings_minutes: outputData.estimated_time_savings_minutes,
+        recommended_altitude_ft: outputData.recommended_altitude_ft,
+        weather: outputData.weather,
+        wind_analysis: outputData.wind_analysis,
+        reasoning: outputData.reasoning,
+        execution_id: result.execution_id,
+        api_mode: result.api_mode
+      };
+
+      addStep('recommendation', 'Generating Final Recommendation', 'complete', finalOutput);
+
+      await sleep(300);
+      setResult(finalOutput);
       setCurrentStep(null);
     } catch (err) {
       console.error('Optimization failed:', err);
@@ -166,6 +176,7 @@ export default function OptimizationTrigger() {
 
   const getStepIcon = (id) => {
     const icons = {
+      init: Database,
       weather: Cloud,
       route: MapPin,
       claude: Brain,
@@ -401,11 +412,11 @@ export default function OptimizationTrigger() {
                 </p>
               </div>
               <div className="bg-white p-3 rounded-lg shadow-sm">
-                <p className="text-sm text-gray-600">Distance</p>
-                <p className="font-bold">{result.selected_route.distance_nm} nm</p>
+                <p className="text-sm text-gray-600">Optimal Altitude</p>
+                <p className="font-bold">FL{Math.floor(result.recommended_altitude_ft / 100)}</p>
               </div>
               <div className="bg-white p-3 rounded-lg shadow-sm">
-                <p className="text-sm text-gray-600">Estimated Savings</p>
+                <p className="text-sm text-gray-600">Cost Savings</p>
                 <p className="font-bold text-green-600">${result.estimated_savings_usd.toFixed(2)}</p>
               </div>
               <div className="bg-white p-3 rounded-lg shadow-sm">
@@ -413,6 +424,31 @@ export default function OptimizationTrigger() {
                 <p className="font-bold">{(result.confidence_score * 100).toFixed(0)}%</p>
               </div>
             </div>
+
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="bg-white p-3 rounded-lg shadow-sm">
+                <p className="text-sm text-gray-600">Fuel Savings</p>
+                <p className="font-bold text-blue-600">{result.estimated_fuel_savings_lbs.toFixed(0)} lbs</p>
+              </div>
+              <div className="bg-white p-3 rounded-lg shadow-sm">
+                <p className="text-sm text-gray-600">Time Savings</p>
+                <p className="font-bold text-amber-600">{result.estimated_time_savings_minutes.toFixed(0)} min</p>
+              </div>
+            </div>
+
+            {result.api_mode && (
+              <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-xs text-gray-600 font-semibold mb-1">API Integration Status:</p>
+                <div className="flex gap-4 text-xs">
+                  <span className={result.api_mode.claude ? 'text-green-700 font-medium' : 'text-gray-500'}>
+                    Claude AI: {result.api_mode.claude ? '✓ Connected' : '○ Mock Mode'}
+                  </span>
+                  <span className={result.api_mode.weather ? 'text-green-700 font-medium' : 'text-gray-500'}>
+                    Weather API: {result.api_mode.weather ? '✓ Connected' : '○ Mock Mode'}
+                  </span>
+                </div>
+              </div>
+            )}
 
             <div className="p-4 bg-white rounded-lg shadow-sm">
               <p className="text-sm text-gray-600 mb-1 font-semibold">AI Reasoning:</p>
