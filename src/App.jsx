@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
-import { Map, BarChart3, Play } from 'lucide-react';
+import { Map, BarChart3, Play, Wind } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import MapView from './components/MapView';
 import OptimizationTrigger from './components/OptimizationTrigger';
+import WindOptimization from './components/WindOptimization';
 
 function App() {
   const [currentView, setCurrentView] = useState('dashboard');
@@ -79,6 +80,17 @@ function App() {
                 <Play className="w-4 h-4" />
                 Optimizer
               </button>
+              <button
+                onClick={() => setCurrentView('wind')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                  currentView === 'wind'
+                    ? 'bg-white text-[#003B7A]'
+                    : 'bg-[#0066CC] hover:bg-[#0080FF]'
+                }`}
+              >
+                <Wind className="w-4 h-4" />
+                Wind Analysis
+              </button>
             </div>
           </div>
         </div>
@@ -88,6 +100,7 @@ function App() {
         {currentView === 'dashboard' && <Dashboard />}
         {currentView === 'map' && <MapView routes={routes} airports={airports} />}
         {currentView === 'optimizer' && <OptimizationTrigger />}
+        {currentView === 'wind' && <WindOptimization />}
       </main>
     </div>
   );
