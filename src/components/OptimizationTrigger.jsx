@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Play, Loader2, Check, AlertCircle, Cloud, Brain, Database, TrendingUp, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import TurbulenceAlert from './TurbulenceAlert';
+import { detectTurbulenceAlongRoute } from '../services/turbulenceService';
 
 export default function OptimizationTrigger() {
   const [airports, setAirports] = useState([]);
@@ -14,6 +16,7 @@ export default function OptimizationTrigger() {
   const [error, setError] = useState(null);
   const [currentStep, setCurrentStep] = useState(null);
   const [steps, setSteps] = useState([]);
+  const [turbulenceData, setTurbulenceData] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -162,6 +165,29 @@ export default function OptimizationTrigger() {
 
       addStep('recommendation', 'Generating Final Recommendation', 'complete', finalOutput);
 
+      const { data: originAirport } = await supabase
+        .from('airports')
+        .select('latitude, longitude')
+        .eq('iata_code', origin)
+        .single();
+
+      const { data: destAirport } = await supabase
+        .from('airports')
+        .select('latitude, longitude')
+        .eq('iata_code', destination)
+        .single();
+
+      if (originAirport && destAirport) {
+        const turbulence = await detectTurbulenceAlongRoute(
+          originAirport.latitude,
+          originAirport.longitude,
+          destAirport.latitude,
+          destAirport.longitude,
+          outputData.recommended_altitude_ft
+        );
+        setTurbulenceData(turbulence);
+      }
+
       await sleep(300);
       setResult(finalOutput);
       setCurrentStep(null);
@@ -264,6 +290,8 @@ export default function OptimizationTrigger() {
             </>
           )}
         </button>
+
+        <TurbulenceAlert turbulenceData={turbulenceData} />
 
         <AnimatePresence>
           {steps.length > 0 && (

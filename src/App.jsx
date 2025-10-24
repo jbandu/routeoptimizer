@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
-import { Map, BarChart3, Play, Wind } from 'lucide-react';
+import { Map, BarChart3, Play, Wind, Fuel } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import MapView from './components/MapView';
 import OptimizationTrigger from './components/OptimizationTrigger';
 import WindOptimization from './components/WindOptimization';
+import FuelTankering from './components/FuelTankering';
 
 function App() {
   const [currentView, setCurrentView] = useState('dashboard');
@@ -91,6 +92,17 @@ function App() {
                 <Wind className="w-4 h-4" />
                 Wind Analysis
               </button>
+              <button
+                onClick={() => setCurrentView('fuel')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                  currentView === 'fuel'
+                    ? 'bg-white text-[#003B7A]'
+                    : 'bg-[#0066CC] hover:bg-[#0080FF]'
+                }`}
+              >
+                <Fuel className="w-4 h-4" />
+                Fuel Tankering
+              </button>
             </div>
           </div>
         </div>
@@ -101,6 +113,16 @@ function App() {
         {currentView === 'map' && <MapView routes={routes} airports={airports} />}
         {currentView === 'optimizer' && <OptimizationTrigger />}
         {currentView === 'wind' && <WindOptimization />}
+        {currentView === 'fuel' && (
+          <div className="p-6">
+            <FuelTankering
+              origin="PTY"
+              destination="BOG"
+              aircraftType="738"
+              distanceNm={562}
+            />
+          </div>
+        )}
       </main>
     </div>
   );
