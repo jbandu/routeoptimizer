@@ -11,7 +11,11 @@
     "typecheck": "tsc --noEmit -p tsconfig.app.json"
   },
   "dependencies": {
+    "@deck.gl/core": "^9.2.2",
+    "@deck.gl/layers": "^9.2.2",
+    "@deck.gl/mapbox": "^9.2.2",
     "@supabase/supabase-js": "^2.57.4",
+    "deck.gl": "^9.2.2",
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.344.0",
     "mapbox-gl": "^3.15.0",

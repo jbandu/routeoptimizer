@@ -1,14 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import RouteVisualization3D from './RouteVisualization3D';
+import { Layers, Map as MapIcon } from 'lucide-react';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || 'pk.eyJ1IjoiY29wYS1haXJsaW5lcyIsImEiOiJjbHhkZW1vIn0.example';
 
-export default function MapView({ routes = [], airports = [] }) {
+export default function MapView({ routes = [], airports = [], optimizedRoute = null }) {
   const mapContainer = useRef(null);
   const map = useRef(null);
   const [selectedRoute, setSelectedRoute] = useState(null);
   const [mapReady, setMapReady] = useState(false);
+  const [view3D, setView3D] = useState(false);
 
   useEffect(() => {
     if (map.current || !mapContainer.current) return;
@@ -125,12 +128,34 @@ export default function MapView({ routes = [], airports = [] }) {
     });
   }, [routes, airports, mapReady]);
 
+  // If 3D view is enabled and we have an optimized route, use the 3D component
+  if (view3D) {
+    return (
+      <RouteVisualization3D
+        routes={routes}
+        airports={airports}
+        optimizedRoute={optimizedRoute}
+        onViewChange={() => setView3D(false)}
+      />
+    );
+  }
+
+  // Otherwise, render the classic 2D view
   return (
     <div className="relative w-full h-screen">
       <div ref={mapContainer} className="w-full h-full" />
 
+      {/* View Toggle Button */}
+      <button
+        onClick={() => setView3D(true)}
+        className="absolute top-4 left-4 bg-white rounded-lg shadow-xl px-4 py-3 flex items-center gap-2 hover:bg-gray-50 transition-all z-10 group"
+      >
+        <Layers className="w-5 h-5 text-[#003B7A] group-hover:text-[#0066CC]" />
+        <span className="font-semibold text-sm text-[#003B7A]">Switch to 3D View</span>
+      </button>
+
       {selectedRoute && (
-        <div className="absolute top-4 right-4 bg-white rounded-lg shadow-xl p-4 w-80 animate-fade-in">
+        <div className="absolute top-4 right-4 bg-white rounded-lg shadow-xl p-4 w-80 animate-fade-in z-10">
           <button
             onClick={() => setSelectedRoute(null)}
             className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
@@ -157,7 +182,7 @@ export default function MapView({ routes = [], airports = [] }) {
         </div>
       )}
 
-      <div className="absolute bottom-4 left-4 bg-white rounded-lg shadow-xl p-4">
+      <div className="absolute bottom-4 left-4 bg-white rounded-lg shadow-xl p-4 z-10">
         <h4 className="font-bold mb-3 text-[#003B7A]">Legend</h4>
         <div className="space-y-2 text-sm">
           <div className="flex items-center gap-2">

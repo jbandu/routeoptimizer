@@ -9,11 +9,13 @@ import FuelTankering from './components/FuelTankering';
 import SavingsDashboard from './components/SavingsDashboard';
 import ApprovalWorkflow from './components/ApprovalWorkflow';
 import FuelPriceManagement from './components/FuelPriceManagement';
+import { generateSampleRoute, SAMPLE_PTY_BOG_ROUTE } from './utils/sampleRouteData';
 
 function App() {
   const [currentView, setCurrentView] = useState('dashboard');
   const [routes, setRoutes] = useState([]);
   const [airports, setAirports] = useState([]);
+  const [optimizedRoute, setOptimizedRoute] = useState(null);
 
   useEffect(() => {
     fetchMapData();
@@ -30,6 +32,10 @@ function App() {
         .from('airports')
         .select('*');
       setAirports(airportData || []);
+
+      // Load a sample optimized route for 3D visualization demo
+      // You can replace this with actual optimized route data from your backend
+      setOptimizedRoute(SAMPLE_PTY_BOG_ROUTE);
     } catch (error) {
       console.error('Error fetching map data:', error);
     }
@@ -148,7 +154,13 @@ function App() {
         {currentView === 'dashboard' && <Dashboard />}
         {currentView === 'savings' && <SavingsDashboard />}
         {currentView === 'approval' && <ApprovalWorkflow />}
-        {currentView === 'map' && <MapView routes={routes} airports={airports} />}
+        {currentView === 'map' && (
+          <MapView
+            routes={routes}
+            airports={airports}
+            optimizedRoute={optimizedRoute}
+          />
+        )}
         {currentView === 'optimizer' && <OptimizationTrigger />}
         {currentView === 'wind' && <WindOptimization />}
         {currentView === 'fuel' && (
