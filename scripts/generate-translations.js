@@ -1,0 +1,371 @@
+/**
+ * Generate authentic Spanish translations using Gemini API
+ *
+ * This script uses Google's Gemini API to generate aviation-specific
+ * Spanish translations that are authentic and professional for COPA Airlines.
+ *
+ * Usage: node scripts/generate-translations.js
+ */
+
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Get API key from environment or prompt
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+if (!GEMINI_API_KEY) {
+  console.error('❌ Error: GEMINI_API_KEY environment variable is required');
+  console.log('\nUsage: GEMINI_API_KEY=your_key node scripts/generate-translations.js');
+  process.exit(1);
+}
+
+// Initialize Gemini
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+
+// English source translations
+const englishTranslations = {
+  // Navigation
+  nav: {
+    dashboard: "Dashboard",
+    savings: "Savings",
+    approval: "Approval",
+    map: "Map",
+    optimizer: "Optimizer",
+    wind: "Wind",
+    tankering: "Tankering",
+    prices: "Prices",
+    appTitle: "AI Route Optimizer"
+  },
+
+  // Dashboard
+  dashboard: {
+    title: "COPA Airlines AI Route Optimizer",
+    subtitle: "Real-time performance monitoring and analytics",
+    totalOptimizations: "Total Optimizations",
+    activeRoutes: "Active Routes",
+    totalSavings: "Total Savings",
+    successRate: "Success Rate",
+    optimizationPerformance: "Optimization Performance",
+    recentOptimizations: "Recent Optimizations",
+    noOptimizations: "No optimizations yet. Run your first optimization!",
+    loading: "Loading dashboard...",
+    savingsLabel: "Savings ($)",
+    confidenceLabel: "Confidence (%)"
+  },
+
+  // Approval Workflow
+  approval: {
+    title: "Optimization Approval",
+    subtitle: "Review and approve route optimizations",
+    dispatcherName: "Your name (dispatcher)",
+    pending: "Pending",
+    approved: "Approved",
+    rejected: "Rejected",
+    review: "Review",
+    approve: "Approve Optimization",
+    reject: "Reject Optimization",
+    urgency: {
+      critical: "Critical",
+      high: "High",
+      normal: "Normal"
+    },
+    savings: "Savings",
+    confidence: "Confidence",
+    duration: "Duration",
+    flightDetails: "Flight Details",
+    origin: "Origin",
+    destination: "Destination",
+    aircraft: "Aircraft",
+    departure: "Departure",
+    optimizationResults: "Optimization Results",
+    costSavings: "Cost Savings",
+    fuelSavings: "Fuel Savings",
+    timeSavings: "Time Savings",
+    aiReasoning: "AI Reasoning",
+    approvedBy: "Approved by",
+    rejectedBy: "Rejected by",
+    reason: "Reason",
+    rejectionReasons: {
+      safety: "Safety concerns",
+      operational: "Operational constraints",
+      costAnalysis: "Cost analysis incorrect",
+      other: "Other"
+    },
+    noPending: "No pending optimizations",
+    allReviewed: "All optimizations have been reviewed",
+    enterDispatcherName: "Please enter your name as dispatcher",
+    selectRejectionReason: "Please select a rejection reason"
+  },
+
+  // Map
+  map: {
+    switchTo3D: "Switch to 3D View",
+    backToClassic: "Back to Classic View",
+    legend: "Legend",
+    hub: "Hub (PTY)",
+    destination: "Destination",
+    airport: "Airport",
+    route: "Route",
+    flightPath: "Flight Path",
+    origin: "Origin",
+    waypoint: "Waypoint",
+    distance: "Distance",
+    flightTime: "Flight Time",
+    view2D: "2D View",
+    view3D: "3D View"
+  },
+
+  // Wind Optimization
+  wind: {
+    title: "Wind Optimization Analysis",
+    subtitle: "Analyze wind patterns and optimize flight altitude",
+    selectRoute: "Select Route",
+    analyzeWinds: "Analyze Winds",
+    analyzing: "Analyzing wind patterns...",
+    optimalAltitude: "Optimal Altitude",
+    averageTailwind: "Average Tailwind",
+    timeSavings: "Time Savings",
+    windAdvantage: "Wind Advantage",
+    altitudeComparison: "Altitude Comparison",
+    noAnalysis: "Select a route and click 'Analyze Winds' to see optimization results",
+    knots: "knots",
+    minutes: "minutes",
+    feet: "ft"
+  },
+
+  // Fuel Tankering
+  fuel: {
+    title: "Fuel Tankering Analysis",
+    subtitle: "Calculate optimal fuel tankering for cost savings",
+    calculating: "Calculating tankering analysis...",
+    recommended: "Tankering Recommended",
+    notRecommended: "Tankering Not Recommended",
+    tankerAmount: "Tanker Amount",
+    estimatedSavings: "Estimated Savings",
+    confidence: "Confidence",
+    priceComparison: "Fuel Price Comparison",
+    pricePerGallon: "Price per Gallon",
+    pricePerLiter: "Price per Liter",
+    priceDifference: "Price Difference",
+    supplier: "Supplier",
+    effectiveDate: "Effective Date",
+    breakdown: "Cost Breakdown",
+    tripFuel: "Trip Fuel",
+    reserveFuel: "Reserve Fuel",
+    requiredFuel: "Required Fuel",
+    maxCapacity: "Max Capacity",
+    grossSavings: "Gross Savings",
+    weightPenalty: "Weight Penalty Cost",
+    extraBurn: "Extra Burn",
+    gallons: "gallons",
+    pounds: "lbs"
+  },
+
+  // Fuel Price Management
+  fuelPrices: {
+    title: "Fuel Price Management",
+    subtitle: "Manage and track fuel prices across airports",
+    currentPrices: "Current Fuel Prices",
+    priceHistory: "Price History",
+    addPrice: "Add New Price",
+    updatePrice: "Update Price",
+    airport: "Airport",
+    price: "Price",
+    date: "Date",
+    supplier: "Supplier",
+    save: "Save",
+    cancel: "Cancel"
+  },
+
+  // Turbulence
+  turbulence: {
+    title: "Turbulence Alert",
+    detected: "Turbulence Detected",
+    severity: {
+      light: "Light",
+      moderate: "Moderate",
+      severe: "Severe"
+    },
+    recommendation: {
+      noAction: "No action required",
+      monitor: "Monitor conditions",
+      considerAvoidance: "Consider route deviation",
+      avoid: "Route avoidance strongly recommended"
+    },
+    zones: "Turbulence Zones",
+    altitude: "Altitude",
+    probability: "Probability",
+    detourCost: "Detour Cost Estimate",
+    additionalDistance: "Additional Distance",
+    additionalFuel: "Additional Fuel",
+    additionalTime: "Additional Time"
+  },
+
+  // Savings Dashboard
+  savings: {
+    title: "Savings Dashboard",
+    subtitle: "Track and analyze cost savings",
+    phase1Summary: "Phase 1 Savings Summary",
+    totalFlights: "Total Flights Optimized",
+    totalSavings: "Total Cost Savings",
+    averageSavings: "Average Savings per Flight",
+    fuelSaved: "Fuel Saved",
+    co2Reduced: "CO₂ Emissions Reduced",
+    savingsTrend: "Savings Trend",
+    savingsByRoute: "Savings by Route",
+    topRoutes: "Top Performing Routes"
+  },
+
+  // Stats and Common
+  common: {
+    loading: "Loading...",
+    error: "Error",
+    success: "Success",
+    save: "Save",
+    cancel: "Cancel",
+    edit: "Edit",
+    delete: "Delete",
+    confirm: "Confirm",
+    close: "Close",
+    back: "Back",
+    next: "Next",
+    previous: "Previous",
+    search: "Search",
+    filter: "Filter",
+    export: "Export",
+    refresh: "Refresh",
+    status: "Status",
+    date: "Date",
+    time: "Time",
+    details: "Details",
+    viewDetails: "View Details",
+    noData: "No data available",
+    selectOption: "Select an option",
+    required: "Required",
+    optional: "Optional",
+    yes: "Yes",
+    no: "No"
+  },
+
+  // Status messages
+  status: {
+    running: "Running",
+    success: "Success",
+    failure: "Failure",
+    pending: "Pending",
+    approved: "Approved",
+    rejected: "Rejected",
+    cancelled: "Cancelled",
+    executed: "Executed"
+  },
+
+  // Units
+  units: {
+    usd: "USD",
+    nm: "nm",
+    ft: "ft",
+    knots: "kts",
+    gallons: "gal",
+    liters: "L",
+    pounds: "lbs",
+    kilograms: "kg",
+    minutes: "min",
+    hours: "hrs",
+    percent: "%",
+    degrees: "°"
+  },
+
+  // Error messages
+  errors: {
+    fetchFailed: "Failed to load data. Please try again.",
+    saveFailed: "Failed to save. Please try again.",
+    invalidInput: "Invalid input. Please check your data.",
+    networkError: "Network error. Please check your connection.",
+    unauthorized: "You don't have permission to perform this action.",
+    notFound: "Resource not found.",
+    serverError: "Server error. Please try again later."
+  }
+};
+
+async function generateSpanishTranslations(englishData) {
+  console.log('🌐 Generating authentic Spanish translations using Gemini...\n');
+
+  const prompt = `You are a professional aviation translator for COPA Airlines, a Panamanian airline. Generate authentic, professional Spanish translations for the following aviation operations software interface.
+
+Requirements:
+1. Use authentic Latin American Spanish (Panama/Latin America region)
+2. Use proper aviation terminology in Spanish
+3. Maintain professional tone appropriate for airline dispatchers and operations staff
+4. Keep the same JSON structure
+5. Aviation terms should be accurate and industry-standard
+6. Use "vos/usted" forms appropriately for professional context
+7. Keep brand names, codes, and technical abbreviations in English (e.g., PTY, COPA, USD, nm)
+8. Numbers, units, and variables should remain in their original format
+
+English JSON to translate:
+${JSON.stringify(englishData, null, 2)}
+
+Return ONLY the translated JSON with the exact same structure. No explanations, just the pure JSON output.`;
+
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+
+    // Extract JSON from response (in case there's extra text)
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('No valid JSON found in response');
+    }
+
+    return JSON.parse(jsonMatch[0]);
+  } catch (error) {
+    console.error('❌ Error generating translations:', error);
+    throw error;
+  }
+}
+
+async function main() {
+  try {
+    console.log('🚀 Starting translation generation...\n');
+
+    // Generate Spanish translations
+    const spanishTranslations = await generateSpanishTranslations(englishTranslations);
+
+    console.log('✅ Translations generated successfully!\n');
+
+    // Create locales directory if it doesn't exist
+    const localesDir = path.join(__dirname, '../src/i18n/locales');
+    if (!fs.existsSync(localesDir)) {
+      fs.mkdirSync(localesDir, { recursive: true });
+    }
+
+    // Write English translations
+    const enPath = path.join(localesDir, 'en.json');
+    fs.writeFileSync(enPath, JSON.stringify(englishTranslations, null, 2));
+    console.log('📝 English translations saved to:', enPath);
+
+    // Write Spanish translations
+    const esPath = path.join(localesDir, 'es.json');
+    fs.writeFileSync(esPath, JSON.stringify(spanishTranslations, null, 2));
+    console.log('📝 Spanish translations saved to:', esPath);
+
+    console.log('\n✨ Translation generation complete!');
+    console.log('\nSample Spanish translations:');
+    console.log('- Dashboard:', spanishTranslations.dashboard?.title || 'N/A');
+    console.log('- Approval:', spanishTranslations.approval?.title || 'N/A');
+    console.log('- Savings:', spanishTranslations.dashboard?.totalSavings || 'N/A');
+
+  } catch (error) {
+    console.error('\n❌ Failed to generate translations:', error.message);
+    process.exit(1);
+  }
+}
+
+main();

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from './lib/supabase';
 import { Map, BarChart3, Play, Wind, Fuel, TrendingUp, CheckCircle, Settings } from 'lucide-react';
 import Dashboard from './components/Dashboard';
@@ -9,9 +10,11 @@ import FuelTankering from './components/FuelTankering';
 import SavingsDashboard from './components/SavingsDashboard';
 import ApprovalWorkflow from './components/ApprovalWorkflow';
 import FuelPriceManagement from './components/FuelPriceManagement';
+import LanguageSwitcher from './components/LanguageSwitcher';
 import { generateSampleRoute, SAMPLE_PTY_BOG_ROUTE } from './utils/sampleRouteData';
 
 function App() {
+  const { t } = useTranslation();
   const [currentView, setCurrentView] = useState('dashboard');
   const [routes, setRoutes] = useState([]);
   const [airports, setAirports] = useState([]);
@@ -52,99 +55,103 @@ function App() {
               </div>
               <div>
                 <h1 className="text-xl font-bold">COPA Airlines</h1>
-                <p className="text-xs text-gray-300">AI Route Optimizer</p>
+                <p className="text-xs text-gray-300">{t('nav.appTitle')}</p>
               </div>
             </div>
 
-            <div className="flex gap-2 overflow-x-auto">
-              <button
-                onClick={() => setCurrentView('dashboard')}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
-                  currentView === 'dashboard'
-                    ? 'bg-white text-[#003B7A]'
-                    : 'bg-[#0066CC] hover:bg-[#0080FF]'
-                }`}
-              >
-                <BarChart3 className="w-4 h-4" />
-                Dashboard
-              </button>
-              <button
-                onClick={() => setCurrentView('savings')}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
-                  currentView === 'savings'
-                    ? 'bg-white text-[#003B7A]'
-                    : 'bg-[#0066CC] hover:bg-[#0080FF]'
-                }`}
-              >
-                <TrendingUp className="w-4 h-4" />
-                Savings
-              </button>
-              <button
-                onClick={() => setCurrentView('approval')}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
-                  currentView === 'approval'
-                    ? 'bg-white text-[#003B7A]'
-                    : 'bg-[#0066CC] hover:bg-[#0080FF]'
-                }`}
-              >
-                <CheckCircle className="w-4 h-4" />
-                Approval
-              </button>
-              <button
-                onClick={() => setCurrentView('map')}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
-                  currentView === 'map'
-                    ? 'bg-white text-[#003B7A]'
-                    : 'bg-[#0066CC] hover:bg-[#0080FF]'
-                }`}
-              >
-                <Map className="w-4 h-4" />
-                Map
-              </button>
-              <button
-                onClick={() => setCurrentView('optimizer')}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
-                  currentView === 'optimizer'
-                    ? 'bg-white text-[#003B7A]'
-                    : 'bg-[#0066CC] hover:bg-[#0080FF]'
-                }`}
-              >
-                <Play className="w-4 h-4" />
-                Optimizer
-              </button>
-              <button
-                onClick={() => setCurrentView('wind')}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
-                  currentView === 'wind'
-                    ? 'bg-white text-[#003B7A]'
-                    : 'bg-[#0066CC] hover:bg-[#0080FF]'
-                }`}
-              >
-                <Wind className="w-4 h-4" />
-                Wind
-              </button>
-              <button
-                onClick={() => setCurrentView('fuel')}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
-                  currentView === 'fuel'
-                    ? 'bg-white text-[#003B7A]'
-                    : 'bg-[#0066CC] hover:bg-[#0080FF]'
-                }`}
-              >
-                <Fuel className="w-4 h-4" />
-                Tankering
-              </button>
-              <button
-                onClick={() => setCurrentView('fuelprices')}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
-                  currentView === 'fuelprices'
-                    ? 'bg-white text-[#003B7A]'
-                    : 'bg-[#0066CC] hover:bg-[#0080FF]'
-                }`}
-              >
-                <Settings className="w-4 h-4" />
-                Prices
-              </button>
+            <div className="flex items-center gap-3">
+              <LanguageSwitcher />
+
+              <div className="flex gap-2 overflow-x-auto">
+                <button
+                  onClick={() => setCurrentView('dashboard')}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
+                    currentView === 'dashboard'
+                      ? 'bg-white text-[#003B7A]'
+                      : 'bg-[#0066CC] hover:bg-[#0080FF]'
+                  }`}
+                >
+                  <BarChart3 className="w-4 h-4" />
+                  {t('nav.dashboard')}
+                </button>
+                <button
+                  onClick={() => setCurrentView('savings')}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
+                    currentView === 'savings'
+                      ? 'bg-white text-[#003B7A]'
+                      : 'bg-[#0066CC] hover:bg-[#0080FF]'
+                  }`}
+                >
+                  <TrendingUp className="w-4 h-4" />
+                  {t('nav.savings')}
+                </button>
+                <button
+                  onClick={() => setCurrentView('approval')}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
+                    currentView === 'approval'
+                      ? 'bg-white text-[#003B7A]'
+                      : 'bg-[#0066CC] hover:bg-[#0080FF]'
+                  }`}
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  {t('nav.approval')}
+                </button>
+                <button
+                  onClick={() => setCurrentView('map')}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
+                    currentView === 'map'
+                      ? 'bg-white text-[#003B7A]'
+                      : 'bg-[#0066CC] hover:bg-[#0080FF]'
+                  }`}
+                >
+                  <Map className="w-4 h-4" />
+                  {t('nav.map')}
+                </button>
+                <button
+                  onClick={() => setCurrentView('optimizer')}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
+                    currentView === 'optimizer'
+                      ? 'bg-white text-[#003B7A]'
+                      : 'bg-[#0066CC] hover:bg-[#0080FF]'
+                  }`}
+                >
+                  <Play className="w-4 h-4" />
+                  {t('nav.optimizer')}
+                </button>
+                <button
+                  onClick={() => setCurrentView('wind')}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
+                    currentView === 'wind'
+                      ? 'bg-white text-[#003B7A]'
+                      : 'bg-[#0066CC] hover:bg-[#0080FF]'
+                  }`}
+                >
+                  <Wind className="w-4 h-4" />
+                  {t('nav.wind')}
+                </button>
+                <button
+                  onClick={() => setCurrentView('fuel')}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
+                    currentView === 'fuel'
+                      ? 'bg-white text-[#003B7A]'
+                      : 'bg-[#0066CC] hover:bg-[#0080FF]'
+                  }`}
+                >
+                  <Fuel className="w-4 h-4" />
+                  {t('nav.tankering')}
+                </button>
+                <button
+                  onClick={() => setCurrentView('fuelprices')}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
+                    currentView === 'fuelprices'
+                      ? 'bg-white text-[#003B7A]'
+                      : 'bg-[#0066CC] hover:bg-[#0080FF]'
+                  }`}
+                >
+                  <Settings className="w-4 h-4" />
+                  {t('nav.prices')}
+                </button>
+              </div>
             </div>
           </div>
         </div>
